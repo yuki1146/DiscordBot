@@ -8,7 +8,7 @@ const {
     ActivityType,
     Collection,
 } = require('discord.js');
-const { token, clientId, guildId } = require('./config.json');
+const { token, clientId, guildId, channelId } = require('./config.json');
 const fs = require('fs');
 const path = require('path');
 
@@ -21,9 +21,32 @@ const commands = fs
     .filter((file) => file.endsWith('.js'))
     .map((file) => {
         const command = require(`./commands/${file}`);
-        client.commands.set(command.data.name, command);
-        return command.data.toJSON();
+        if (command.data && command.data.name) {
+            client.commands.set(command.data.name, command);
+            return command.data.toJSON();
+        } else {
+            console.error(`Invalid command format in ${file}:`, command);
+            return null; // 無効なコマンドはnullを返す
+        }
+    })
+    .filter(command => command !== null);
+
+
+// Bot起動時に指定したチャンネルにメッセージを送信
+client.once(Events.ClientReady, async () => {
+    console.log('起動完了!');
+
+    const channel = await client.channels.fetch(channelId);
+    if (channel) {
+        await channel.send('Botが起動しました！');
+    }
+
+    client.user.setStatus(PresenceUpdateStatus.Online);
+    client.user.setActivity({
+        name: '~~起動中~~',
+        type: ActivityType.Custom,
     });
+});
 
 const rest = new REST({ version: '10' }).setToken(token);
 
@@ -53,15 +76,5 @@ const loadEvents = () => {
 };
 
 loadEvents();
-
-client.once(Events.ClientReady, () => {
-    console.log('起動完了!');
-
-    client.user.setStatus(PresenceUpdateStatus.Online);
-    client.user.setActivity({
-        name: '三沢市を応援中！',
-        type: ActivityType.Custom,
-    });
-});
 
 client.login(token);
