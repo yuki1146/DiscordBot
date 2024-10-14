@@ -102,4 +102,6 @@ const loadEvents = () => {
     }
 };
 
-client.login(token);
+loadEvents();
+
+client.login(token)
