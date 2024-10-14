@@ -11,12 +11,23 @@ const {
 const { token, clientId, guildId, channelId } = require('./config.json');
 const fs = require('fs');
 
+// ここで client を作成
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildBans,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+    ],
+});
+
 // index.jsの冒頭に追加
-const banLog = require('./events/banLog');
-const kickLog = require('./events/kickLog');
-const timeoutLog = require('./events/timeoutLog');
-const messageDeleteLog = require('./events/messageDeleteLog');
-const messageEditLog = require('./events/messageEditLog');
+const banLog = require('./events/moderation/banLog');
+const kickLog = require('./events/moderation/kickLog');
+const timeoutLog = require('./events/moderation/timeoutLog');
+const messageDeleteLog = require('./events/moderation/messageDeleteLog');
+const messageEditLog = require('./events/moderation/messageEditLog');
 
 // イベントの読み込みの部分にログイベントを追加
 client.on('guildBanAdd', (ban) => banLog.execute(ban));
@@ -35,21 +46,22 @@ const commands = fs
         const command = require(`./commands/${file}`);
         if (command.data && command.data.name) {
             client.commands.set(command.data.name, command);
-            return command.data; // toJSON()を削除して直接返す
+            return command.data;
         } else {
             console.error(`Invalid command format in ${file}:`, command);
-            return null; // 無効なコマンドはnullを返す
+            return null;
         }
     })
     .filter(command => command !== null);
 
 // Bot起動時に指定したチャンネルにメッセージを送信
 client.once(Events.ClientReady, async () => {
-    console.log('起動完了!');
-
+    console.log('Botの起動完了');
+    
     const channel = await client.channels.fetch(channelId);
     if (channel) {
         await channel.send('Botが起動しました！');
+        console.log('起動メッセージを送信しました');
     }
 
     client.user.setStatus(PresenceUpdateStatus.Online);
