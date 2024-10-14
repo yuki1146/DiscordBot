@@ -56,12 +56,12 @@ const commands = fs
 
 // Bot起動時に指定したチャンネルにメッセージを送信
 client.once(Events.ClientReady, async () => {
-    console.log('Botの起動完了');
+    console.log('Botの起動完了！');
     
     const channel = await client.channels.fetch(channelId);
     if (channel) {
         await channel.send('Botが起動しました！');
-        console.log('起動メッセージを送信しました');
+        console.log('起動メッセージを送信しました。');
     }
 
     client.user.setStatus(PresenceUpdateStatus.Online);
@@ -80,7 +80,7 @@ const rest = new REST({ version: '10' }).setToken(token);
             body: commands,
         });
 
-        console.log('コマンドの登録完了');
+        console.log('コマンドの登録完了！');
     } catch (error) {
         console.error(error);
     }
@@ -104,4 +104,26 @@ const loadEvents = () => {
 
 loadEvents();
 
-client.login(token)
+// Pingコマンドの追加
+client.commands.set('ping', {
+    data: {
+        name: 'ping',
+        description: 'WebSocket PingとAPI Endpoint Pingを表示します。',
+    },
+    async execute(interaction) {
+        const apiPingStart = Date.now();  // API Pingの計測開始
+        await interaction.deferReply();   // 応答を遅らせる
+
+        // WebSocket Pingの取得
+        const wsPing = interaction.client.ws.ping;
+
+        // API Pingの計測終了
+        const apiPingEnd = Date.now();
+        const apiPing = apiPingEnd - apiPingStart;
+
+        // Ping応答を送信
+        await interaction.editReply(`🏓 WebSocket Ping: \`${wsPing}ms\`\n⌛ API Endpoint Ping: \`${apiPing}ms\``);
+    },
+});
+
+client.login(token);
