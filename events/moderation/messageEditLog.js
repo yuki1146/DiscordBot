@@ -7,7 +7,7 @@ module.exports = {
         if (oldMessage.content !== newMessage.content) {
             const logChannel = await oldMessage.guild.channels.fetch(channelId);
             const embed = new EmbedBuilder()
-                .setTitle('メッセージが編集されました')
+                .setTitle('メッセージが編集されました。')
                 .setColor(0xffff00)
                 .addFields(
                     { name: 'メッセージ送信者', value: oldMessage.author.tag || '不明' },
