@@ -22,7 +22,7 @@ const client = new Client({
     ],
 });
 
-// index.jsの冒頭に追加
+// moderationイベント読み込み
 const banLog = require('./events/moderation/banLog');
 const kickLog = require('./events/moderation/kickLog');
 const timeoutLog = require('./events/moderation/timeoutLog');
@@ -38,13 +38,18 @@ client.on('messageUpdate', (oldMessage, newMessage) => messageEditLog.execute(ol
 
 client.commands = new Collection();
 
-// コマンドの読み込み
+// コマンドの読み込みと重複チェック
 const commands = fs
     .readdirSync('./commands')
     .filter((file) => file.endsWith('.js'))
     .map((file) => {
         const command = require(`./commands/${file}`);
         if (command.data && command.data.name) {
+            if (client.commands.has(command.data.name)) {
+                console.error(`Duplicate command name detected: ${command.data.name}`);
+                return null;
+            }
+            console.log(`Loaded command: ${command.data.name}`);  // コマンド名を出力
             client.commands.set(command.data.name, command);
             return command.data;
         } else {
@@ -52,7 +57,7 @@ const commands = fs
             return null;
         }
     })
-    .filter(command => command !== null);
+    .filter(command => command !== null);  // 重複や無効なコマンドを除外
 
 // Bot起動時に指定したチャンネルにメッセージを送信
 client.once(Events.ClientReady, async () => {
@@ -79,10 +84,9 @@ const rest = new REST({ version: '10' }).setToken(token);
         await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
             body: commands,
         });
-
         console.log('コマンドの登録完了！');
     } catch (error) {
-        console.error(error);
+        console.error('コマンド登録中のエラー:', error);
     }
 })();
 
