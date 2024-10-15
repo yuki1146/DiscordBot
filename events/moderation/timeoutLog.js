@@ -7,7 +7,7 @@ module.exports = {
         if (oldMember.communicationDisabledUntilTimestamp !== newMember.communicationDisabledUntilTimestamp) {
             const logChannel = await newMember.guild.channels.fetch(channelId);
             const embed = new EmbedBuilder()
-                .setTitle('ユーザーがタイムアウトされました')
+                .setTitle('ユーザーがタイムアウトされました。')
                 .setColor(0x0000ff)
                 .addFields(
                     { name: 'ユーザー名', value: newMember.user.tag },
