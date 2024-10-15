@@ -6,7 +6,7 @@ module.exports = {
     async execute(ban) {
         const logChannel = await ban.guild.channels.fetch(channelId);
         const embed = new EmbedBuilder()
-            .setTitle('ユーザーがBANされました')
+            .setTitle('ユーザーがBANされました。')
             .setColor(0xff0000)
             .addFields(
                 { name: 'ユーザー名', value: ban.user.tag },
